@@ -32,11 +32,14 @@ B(u(x, t), x, t)=\begin{cases}
 $$
 
 2. Burgers equations (simple model of viscous fluid motions)
+
+$$
 \begin{aligned}
 & F(u(x, t), x, t)=\frac{\partial u}{\partial t}+u \frac{\partial u}{\partial x}-\nu \frac{\partial^2 u}{\partial x^2}\\
 & B(u(x,t),x,t)=\text{periodic boundary conditions} \\
 & I(u(x,t),x,t)=u(x,t) - \text{"analytic solution at t=0"}
 \end{aligned}
+$$
 
 3. Kuromoto-Sivashinsky equations (models the diffusive–thermal instabilities in a laminar flame front)
 \begin{aligned}
