@@ -47,7 +47,7 @@ $$
 \begin{aligned}
 & F(u(x, t), x, t)=\frac{\partial u}{\partial t}+u \frac{\partial u}{\partial t}+\frac{\partial^2 u}{\partial x^2}+\frac{\partial^4 u}{\partial x^4}-f(x, t) \\
 & B(u(x,t),x,t)=\text{periodic boundary conditions} \\
-& I(u(x,t),x,t)=u(x,0)-\cos \left(\frac{2 \pi x}{10}\right)-\operatorname{sech}\left(\frac{x-L / 2}{5}\right)
+& I(u(x,t),x,t)=u(x,0)-\cos \left(\frac{2 \pi x}{10}\right)-\text{sech}\left(\frac{x-L / 2}{5}\right)
 \end{aligned}
 $$
 
@@ -55,7 +55,7 @@ $$
 
 $$
 \begin{aligned}
-& F_1(u(x, t), x, t)=(u \cdot \nabla) u+\nabla p-\frac{1}{\operatorname{Re}} \nabla^2 u \\
+& F_1(u(x, t), x, t)=(u \cdot \nabla) u+\nabla p-\frac{1}{\text{Re}} \nabla^2 u \\
 & F_2(u(x, t), x, t)=\nabla \cdot u
 \end{aligned}
 $$
