@@ -18,15 +18,15 @@ General/forward PDE problem: Find $u(x,t)$ such that
 Examples:
 1. Laplace equations (models steady-state of heat dissipation)
 $$
-\begin{aligned}
-& F(u(x, t), x, t)=\frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial t^2}=0 \\
-& B(u(x, t), x, t)=\left\{\begin{array}{cl}
+F(u(x, t), x, t)=\frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial t^2}=0
+$$
+$$
+B(u(x, t), x, t)=\begin{cases}
 \sin (\pi x), & \text { if } t=1 \\
 0, & \text { if } t=0 \\
 0, & \text { if } x=0 \\
 0, & \text { if } x=1
-\end{array}\right.
-\end{aligned}
+\end{cases}
 $$
 
 2. Burgers equations (simple model of viscous fluid motions)
