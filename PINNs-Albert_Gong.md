@@ -85,7 +85,6 @@ $$\mathcal{J}(\mathbf{u})=\frac{1}{2} \int_0^{L_y}\left(\left|u\left(L_x, y\righ
 ## Methodology
 
 Model $u(x,t)$ using a fully-connected neural network $u_{NN}(x,t; \theta_u)$ with parameters $\theta$ and inputs $x$ and $t$. Model $c(x,t)$ using fully-connected neural network $u_{NN}(x,t; \theta_c)$ with parameters $\theta_c$, respectively, and inputs $x$ and $t$. Approximate the optimal control PDE problem by the following optimization problem:
-
 $$\text{argmin}_{\theta_u,\theta_c} \mathcal{L}\left(\theta_{u}, \theta_{c} \right)$$
 
 where
