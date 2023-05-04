@@ -88,7 +88,6 @@ Model $u(x,t)$ using a fully-connected neural network $u_{NN}(x,t; \theta_u)$ wi
 
 $$
 \text{argmin}_{c\in \mathcal{C}} \mathcal{J}(u)
-% \text{argmin}_{\theta_u,\theta_c} \mathcal{L}\left(\theta_{u}, \theta_{c} \right)
 $$
 
 where
