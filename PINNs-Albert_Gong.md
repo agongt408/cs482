@@ -4,7 +4,7 @@ Albert Gong
 
 May 4, 2023
  
-This blog post was written for Yale’s CPSC 482: Current Topics in Applied Machine Learning course. I will first walk through the paper: https://arxiv.org/abs/2111.09880. Later I will provide my own thoughts and comments on the paper.
+This blog post was written for Yale’s CPSC 482: Current Topics in Applied Machine Learning course. I will first walk through the paper: https://arxiv.org/abs/2111.09880. Then I will provide some of my own thoughts and comments.
 
 ## Motivation
 
@@ -124,7 +124,7 @@ Note: Similar to the Laplace equations, there is no time component. Consequently
 
 ## Methodology
 
-We estimate $u(\boldsymbol{x},t)$ using a fully-connected neural network $u_{NN}(\boldsymbol{x},t; \boldsymbol{\theta}_{\boldsymbol{u}})$ parameterized by $\boldsymbol{\theta}_{\boldsymbol{u}}$. We also estimate $c(\boldsymbol{x},t)$ using fully-connected neural network $c_{NN}(x,t; \boldsymbol{\theta}_{\boldsymbol{c}})$ with parameters $\theta_c$, respectively, and inputs $x$ and $t$. Approximate the optimal control PDE problem by the following optimization problem: 
+The authors of the paper estimate $u(\boldsymbol{x},t)$ using a fully-connected neural network $u_{NN}(\boldsymbol{x},t; \boldsymbol{\theta}_{\boldsymbol{u}})$ parameterized by $\boldsymbol{\theta}_{\boldsymbol{u}}$. They also estimate $c(\boldsymbol{x},t)$ using a fully-connected neural network $c_{NN}(x,t; \boldsymbol{\theta}_{\boldsymbol{c}})$ with parameters $\theta_c$, respectively, and inputs $x$ and $t$. They then approximate the optimal control PDE problem by the following optimization problem: 
 
 $$
 \text{argmin}_{\theta_{u},\theta_{c}} \mathcal{L}\left(\theta_{u}, \theta_{c} \right)
@@ -141,7 +141,7 @@ $$
 
 $\left\{\mathbf{x}_i^r, t_i^r\right\}_{i=1}^{N_r},\left\{\mathbf{x}_i^b, t_i^b\right\}_{i=1}^{N_b},\left\{\mathbf{x}_i^0\right\}_{i=1}^{N_0}$ represent training samples to estimate the volume, boundary, and initial conditions, and $w_r,w_b,w_0,w_{\mathcal{J}}$ are loss weights.
 
-We use the following iterative gradient algorithm to solve the optimization problem. Starting from randomly initialized paramters $(\boldsymbol{\theta}_{\boldsymbol{u}},\boldsymbol{\theta}_{\boldsymbol{c}})$, we update the parameters via
+To solve the above optimization problem, the authors use the following alternating gradient algorithm. Starting from randomly initialized paramters $(\boldsymbol{\theta}_{\boldsymbol{u}},\boldsymbol{\theta}_{\boldsymbol{c}})$, update the parameters via
 
 $$
 \begin{aligned}
@@ -152,7 +152,7 @@ $$
 
 where $\alpha(k)$ is an adaptive learning rate set by the chosen optimizer.
 
-Note the components in the loss function $\mathcal{L}\left(\boldsymbol{\theta}_{\boldsymbol{u}}, \boldsymbol{\theta}_{\boldsymbol{c}}\right)$ may have competing objectives. For example, by decreasing ??, we may increase ??. To tune the hyperparameter $w_{\mathcal{J}}$, the authors propose a two-step line search strategy, which roughly goes as follows:
+Note the components in the loss function $\mathcal{L}\left(\boldsymbol{\theta}_{\boldsymbol{u}}, \boldsymbol{\theta}_{\boldsymbol{c}}\right)$ may have competing objectives. For example, by decreasing $\mathcal{L}_{\mathcal{J}}$, we may increase the loss compenents representing the PDE constraints. To tune the hyperparameter $w_{\mathcal{J}}$, the authors propose a two-step line search strategy (see Section 2.4), which roughly goes as follows:
 
 - Solve forward problem once to tune network architecture, distribution of residual points, training hyperparameters (number of epochs, batch size, etc), and weights $w_r$, $w_b$, and $w_0$.
 
@@ -162,111 +162,38 @@ Note the components in the loss function $\mathcal{L}\left(\boldsymbol{\theta}_{
     - Fixing $u'_{NN}$, train $c'_{NN}$
 - Return $c'_{NN}$ corresponding to the lowest value of $\mathcal{J}(u'_{NN},c'_{NN})$
 
-<!-- ### Adjoint-based methods
-
-TODO: Explain adjoint method
-- iterative methods, such as the direct-adjoint-looping algorithm
-
-We can enforce the PDE constraints using the method of Lagrange multipliers:
-$$
-\mathcal{L}(\mathbf{u}, \mathbf{c}, \boldsymbol{\lambda})=\mathcal{J}(\mathbf{u}, \mathbf{c})-\langle\boldsymbol{\lambda}, \mathcal{F}[\mathbf{u} ; \mathbf{c}]\rangle
-$$
-where the inner product is defined by
-$$
-\langle\mathbf{a}, \mathbf{b}\rangle=\int_{0}^{T} \int_{\Omega} \mathbf{a}(\mathbf{x}, t)^{\top} \mathbf{b}(\mathbf{x}, t) d \mathbf{x} d t
-$$
-
-Then, the constrained problem (2) is equivalent to the unconstrained problem
-
-$$
-\mathbf{u}^{*}, \mathbf{c}^{*}, \boldsymbol{\lambda}^{*}=\arg \min _{\mathbf{u}, \mathbf{c}, \boldsymbol{\lambda}} \mathcal{L}(\mathbf{u}, \mathbf{c}, \boldsymbol{\lambda})
-$$
-whose solution is given by the stationary point(s) of the Lagrangian. This yields the following stationarity conditions:
-
-Stationary condition $u(x,t)$
-$$
-\left\langle\frac{\partial \mathcal{L}}{\partial \mathbf{u}}, \delta \mathbf{u}\right\rangle=\left\langle\frac{\partial \mathcal{J}}{\partial \mathbf{u}}, \delta \mathbf{u}\right\rangle-\left\langle\boldsymbol{\lambda}, \frac{\partial \mathcal{F}}{\partial \mathbf{u}} \delta \mathbf{u}\right\rangle=\left\langle\frac{\partial \mathcal{J}}{\partial \mathbf{u}}-\frac{\partial \mathcal{F}^{\dagger}}{\partial \mathbf{u}} \boldsymbol{\lambda}, \delta \mathbf{u}\right\rangle=0 \quad \forall \delta \mathbf{u}
-$$
-This implies
-$$
-\frac{\partial \mathcal{J}(\mathbf{u}, \mathbf{c})}{\partial \mathbf{u}}-\frac{\partial \mathcal{F}[\mathbf{u}, \mathbf{c}]^{\dagger}}{\partial \mathbf{u}} \boldsymbol{\lambda}=0
-$$
-
-
-Stationarity condition $c(x,t)$
-$$
-\left\langle\frac{\partial \mathcal{L}}{\partial \mathbf{c}}, \delta \mathbf{c}\right\rangle=\left\langle\frac{\partial \mathcal{J}}{\partial \mathbf{c}}, \delta \mathbf{c}\right\rangle-\left\langle\boldsymbol{\lambda}, \frac{\partial \mathcal{F}}{\partial \mathbf{c}} \delta \mathbf{c}\right\rangle=\left\langle\frac{\partial \mathcal{J}}{\partial \mathbf{c}}-\frac{\partial \mathcal{F}^{\dagger}}{\partial \mathbf{c}} \boldsymbol{\lambda}, \delta \mathbf{c}\right\rangle=0 \quad \forall \delta \mathbf{c}
-$$
-This implies
-$$
-\frac{\partial \mathcal{J}(\mathbf{u}, \mathbf{c})}{\partial \mathbf{c}}-\frac{\partial \mathcal{F}[\mathbf{u}, \mathbf{c}]^{\dagger}}{\partial \mathbf{c}} \boldsymbol{\lambda}=0
-$$
-
-Stationarity condition $\lambda(x,t)$
-$$
-\left\langle\frac{\partial \mathcal{L}}{\partial \boldsymbol{\lambda}}, \delta \boldsymbol{\lambda}\right\rangle=-\langle\delta \boldsymbol{\lambda}, \mathcal{F}\rangle=0 \quad \forall \delta \boldsymbol{\lambda},
-$$
-
-where we have defined the adjoint $\mathcal{A}^{\dagger}$ of a linear operator $\mathcal{A}$ as
-$$
-\langle\mathbf{a}, \mathcal{A} \mathbf{b}\rangle=\left\langle\mathcal{A}^{\dagger} \mathbf{a}, \mathbf{b}\right\rangle \quad \forall \mathbf{a}, \mathbf{b}
-$$
-This implies
-$$
-\mathcal{F}[\mathbf{u}, \mathbf{c}] = 0
-$$
-
-When the stationarity conditions for $u(x,t)$ and $c(x,t)$ are satisfied, we have $\mathcal{J}=\mathcal{L}$, and $14 \mathrm{~b}$ therefore gives the total gradient of the cost objective with respect to the control $\mathbf{c}$,
-
-$$
-\frac{\mathrm{d} \mathcal{J}(\mathbf{u}, \mathbf{c})}{\mathrm{d} \mathbf{c}}=\frac{\partial \mathcal{L}(\mathbf{u}, \mathbf{c})}{\partial \mathbf{c}}=\frac{\partial \mathcal{J}(\mathbf{u}, \mathbf{c})}{\partial \mathbf{c}}-\frac{\partial \mathcal{F}[\mathbf{u}, \mathbf{c}]^{\dagger}}{\partial \mathbf{c}} \boldsymbol{\lambda}
-$$
-
-For the optimal solution, $\mathrm{d} \mathcal{J}\left(\mathbf{u}^{*}, \mathbf{c}^{*}\right) / \mathrm{d} \mathbf{c}=0$ holds.
-
-We can solve this using the direct-adjoint looping (DAL) iterative algorithm. At each iteration $k$:
-1. given the current control $\mathbf{c}^{k}$, solve the forward PDE for $\mathbf{u}^{k}$
-    - Use finite-volume method implemention in OpenFOAM
-2. given $\mathbf{u}^{k}$ and $\mathbf{c}^{k}$, solve the adjoint PDE (16) for $\boldsymbol{\lambda}^{k}$ in backward time since the adjoint PDE contains a terminal condition instead of an initial condition.
-
-3. Update the control via
-$$
-\mathbf{c}^{k+1}=\mathbf{c}^{k}-\beta \frac{\mathrm{d} \mathcal{J}\left(\mathbf{u}^{k}, \mathbf{c}^{k}\right)}{\mathrm{d} \mathbf{c}}
-$$ -->
 
 ### Implementation Details
 
 The PINN solutions are trained on one GPU (Tesla V100) in TensorFlow. The DAL solutions are all computed using a single CPU core (Core i7-4980HQ or Xeon E5-2683), using the C++ finite-volume solver OpenFOAM for the Laplace and Navier-Stokes equations, and a spectral Python code for the Burgers and Kuramoto-Sivashinsky equations.
 
-
-
-## Results
-
-<!-- ### Forward Problem
-
-Laplace equation:
-- Training strategy: we sample 10000 residual training points using a Latin hypercube sampling strategy and we select 160 equally-spaced boundary training points on the boundary of the domain
-- 6k epochs
-
-Burgers equation:
-
-Kuramoto-Sivashinsky equation:
-
-Navier-Stokes equations: -->
-
-### Accuracy
-
-For each example, we compare the solution found using the proposed PINN-based approach to the solution found using DAL and the analytical solution (if known).
-
-
-1. **2-D Laplace equations**
-
-<!-- - Training strategy: we sample 10000 residual training points using a Latin hypercube sampling strategy and we select 160 equally-spaced boundary training points on the boundary of the domain
+<!-- Training strategy:
+- We sample 10000 residual training points using a Latin hypercube sampling strategy and we select 160 equally-spaced boundary training points on the boundary of the domain
 
 LHS: a square grid containing sample positions is a Latin square if (and only if) there is only one sample in each row and each column
 
 - 10k epochs
 - We repeat this procedure for 11 values of $w_J$ between $10^{-3}$ and $10^7$ (**downside: need to select this hyperparameter in practice**) -->
+
+## Results
+
+### Direct-Adjoint Looping (DAL)
+
+The direct-adjoint looping (DAL) iterative algorithm proceeds as follows. At each iteration $k$:
+1. Given the current control $\mathbf{c}^{k}$, solve the forward PDE for $\mathbf{u}^{k}$
+    - We authors use the finite-volume method implemention in OpenFOAM
+2. Given $\mathbf{u}^{k}$ and $\mathbf{c}^{k}$, solve the adjoint PDE for $\boldsymbol{\lambda}^{k}$ in backward time since the adjoint PDE contains a terminal condition instead of an initial condition.
+3. Update the control via
+$$
+\mathbf{c}^{k+1}=\mathbf{c}^{k}-\beta \frac{\mathrm{d} \mathcal{J}\left(\mathbf{u}^{k}, \mathbf{c}^{k}\right)}{\mathrm{d} \mathbf{c}}
+$$
+
+### Accuracy
+
+For each example, the authors compare the solution found using the proposed PINN-based approach to the solution found using DAL. They also provide a comparison with the known analytical solution wherever possible.
+
+
+1. **2-D Laplace equations**
 
 ![](https://cdn.mathpix.com/cropped/2023_05_03_190f21dadd78273f9933g-11.jpg?height=882&width=1562&top_left_y=387&top_left_x=224)
 
@@ -274,9 +201,6 @@ The analytical solution to the optimal control problem is
 $$
 c_{a}^{*}(x) =\text{sech}(2 \pi) \sin (2 \pi x)+\frac{1}{2 \pi} \tanh (2 \pi) \cos (2 \pi x)
 $$
-
-<!-- Figure 3 - Optimal solution of the Laplace control problem 25. (a) Components of the loss 20 obtained at the training of the PINN optimal control solution versus weight $w_{\mathcal{J}}$ (step 1 of the line search strategy). (b) Cost objective estimate obtained by a separate PINN solution of the forward problem with fixed control from the PINN optimal solution versus $w_{\mathcal{J}}$ (step 2 of the line search strategy). The best optimal control, obtained with $w_{\mathcal{J}}=100$, is shown by the red dot. (c) Convergence of the loss during training of the PINN optimal control solution (for $w_{\mathcal{J}}=100$ ). (d) Convergence of the cost objective during DAL iterations. (e) Optimal top wall potential $f^{*}$ obtained from the PINN (for $w_{\mathcal{J}}=100$ ) and DAL frameworks, compared with the top wall potential $f_{a}^{*}$ of the analytical solution. -->
-
 
 2. **1-D Burgers equations**
 
@@ -287,19 +211,14 @@ $$
 c_{a}^*(x)=\frac{2 \nu \pi e^{5\pi^{2} \nu} \sin (\pi x)}{2+e^{5\pi^{2} \nu} \cos (\pi x)} .
 $$
 
-<!-- Figure 5 - Optimal solution of the Burgers control problem 30. (a) Components of the loss 20 obtained at the end of training of the PINN optimal control solution versus weight $w_{\mathcal{J}}$ (step 1 of the line search strategy). (b) Cost objective estimate obtained by a separate PINN solution of the forward problem with fixed control from the PINN optimal solution versus $w_{\mathcal{J}}$ (step 2 of the line search strategy). The best optimal control, obtained with $w_{\mathcal{J}}=1$, is shown by the red dot. (c) Convergence of the loss during training of the PINN optimal control solution (for $w_{\mathcal{J}}=1$ ). (d) Convergence of the cost objective during DAL iterations. (e) Optimal initial condition $u_{0}^{*}$ obtained using the PINN (for $w_{\mathcal{J}}=1$ ) and DAL frameworks, compared with the initial state of the analytical solution. (f) Snapshots at final time of two spectral solutions calculated using the optimal initial conditions $u_{0}^{*}$ from the PINN Convergence of the loss during training of the PINN optimal control solution (for $w_{\mathcal{J}}=1$ ) and DAL frameworks, compared with the final state of the analytical solution. -->
-
 3. **1-D Kuramoto-Sivashinsky equations**
 
 ![](https://cdn.mathpix.com/cropped/2023_05_03_190f21dadd78273f9933g-16.jpg?height=1320&width=1592&top_left_y=654&top_left_x=220)
-
-<!-- Figure 7 - Optimal solution of the KS control problem 34. (a) Components of the loss 20 obtained at the end of training of the PINN optimal control solution versus weight $w_{\mathcal{J}}$ (step 1 of the line search strategy). (b) Cost objective estimate obtained by a separate PINN solution of the forward problem with fixed control from the PINN optimal solution versus $w_{\mathcal{J}}$ (step 2 of the line search strategy). The best optimal control, obtained with $w_{\mathcal{J}}=10^{-3}$, is shown by the red dot. (c) Convergence of the loss during training of the PINN optimal control solution (for $w_{\mathcal{J}}=10^{-3}$ ). (d) Convergence of the cost objective during DAL iterations. (e,f) Optimal control forces $f^{*}$ obtained from the PINN (for $w_{\mathcal{J}}=10^{-3}$ ) and DAL frameworks. (g,h,i) Snapshots at final time and contour plots of two spectral solutions calculated using the optimal control forces $f^{*}$ obtained from the PINN (for $w_{\mathcal{J}}=10^{-3}$ ) and DAL frameworks.  -->
 
 4. **2-D incompressible Navier-Stokes equations**
 
 ![](https://cdn.mathpix.com/cropped/2023_05_03_190f21dadd78273f9933g-21.jpg?height=1678&width=1610&top_left_y=434&top_left_x=220)
 
-<!-- Figure 10 - Optimal solution of the Navier-Stokes control problem 39 . (a) Components of the loss 20 obtained at the end of training of the PINN optimal control solution versus weight $w_{\mathcal{J}}$ (step 1 of the line search strategy). (b) Cost objective estimate obtained by a separate PINN solution of the forward problem with fixed control from the PINN optimal solution versus $w_{\mathcal{J}}$ (step 2 of the line search strategy). The best optimal control, obtained with $w_{\mathcal{J}}=30$, is shown by the red dot. (c) Convergence of the loss during training of the PINN optimal control solution (for $w_{\mathcal{J}}=30$ ). (d) Convergence of the cost objective during DAL iterations. (e) Optimal inlet velocity profiles $u_{\text {in }}^{*}$ obtained using the PINN (for $w_{\mathcal{J}}=30$ ) and DAL frameworks. (f) Outlet velocity profiles of two forward OpenFOAM solutions calculated using the optimal inlet profiles $u_{\text {in }}^{*}$ from the PINN (for $w_{\mathcal{J}}=30$ ) and DAL frameworks, compared with the target parabolic profile. (f,g,h,i) Velocity magnitude, streamlines and pressure fields of the OpenFOAM solutions calculated using the optimal inlet profiles $u_{\text {in }}^{*}$ from the PINN (for $\left.w_{\mathcal{J}}=30\right)$ and DAL frameworks.  -->
 
 ### Computational Efficiency
 
