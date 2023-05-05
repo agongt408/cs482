@@ -8,79 +8,99 @@ This blog post was written for Yale’s CPSC 482: Current Topics in Applied Mach
 
 ## Motivation
 
-We aim to solve a PDE-constrained minimization problem. That is, we 
+We aim to solve PDE-contrained optimization problems of the general form
+$$
+\boldsymbol{c}^* \in \text{argmin}_{\boldsymbol{c} \in \mathcal{C}} \mathcal{J}(\boldsymbol{u}, \boldsymbol{c})
+$$
+where $\boldsymbol{u} :=u(\boldsymbol{x},t)$ and $\boldsymbol{c}(\boldsymbol{x},t):=(c_v(\boldsymbol{x},t),c_b(\boldsymbol{x},t), c_0(\boldsymbol{x}))$ depend on each other via the **PDE contraints**. Namely, they must satisfy
+<!-- - *Volume constraint:* $\mathcal{F}(u(x, t), x, t)=0$ for all $x \in \Omega, t \in[0, T]$
+- *Boundary constraint:* $\mathcal{B}(u(x, t), x, t)=0$ for all $x \in$ boundary of $\Omega, \mathrm{t} \in[0, T]$
+- *Initial constraint:* $\mathcal{I}(u(x, 0), x)=0$ for all $x \in \Omega$ -->
 
-General/forward PDE problem: Find $u(x,t)$ such that
-- [Volume] $\mathcal{F}(u(x, t), x, t)=0$ for all $x \in \Omega, t \in[0, T]$
-- [Boundary] $\mathcal{B}(u(x, t), x, t)=0$ for all $x \in$ boundary of $\Omega, \mathrm{t} \in[0, T]$
-- [Initial] $\mathcal{I}(u(x, 0), x)=0$ for all $x \in \Omega$
+- *Volume constraint:* $\mathcal{F}(u(\boldsymbol{x}, t), \boldsymbol{x}, t; c_v(\boldsymbol{x},t))=0$ for all $\boldsymbol{x} \in \Omega, t \in[0, T]$
+- *Boundary constraint:* $\mathcal{B}(u(\boldsymbol{x}, t), \boldsymbol{x}, t; c_b(\boldsymbol{x},t))=0$ for all $x \in \partial \Omega, \mathrm{t} \in[0, T]$, where $\partial \Omega$ denotes the boundary of $\Omega$
+- *Initial constraint:* $\mathcal{I}(u(\boldsymbol{x}, 0), \boldsymbol{x}; c_0(\boldsymbol{x}))=0$ for all $\boldsymbol{x} \in \Omega$
 
-Examples:
-1. Laplace equations (models steady-state of heat dissipation)
+Here, $\mathcal{F}$, $\mathcal{B}$, and $\mathcal{I}$ denote differential operators. We illustrate the problem statement with several real-world examples.
+
+### Examples
+
+1. **Laplace equations** (models steady-state of heat dissipation): Let $\Omega=[0,1]\times [0,1]$ and denote $\boldsymbol{x}=(x,y)$.
 
 $$
-F(u(x, t), x, t)=\frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial t^2}=0
+\mathcal{F}(u(\boldsymbol{x}), \boldsymbol{x}; c_v(\boldsymbol{x})) :=\frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial y^2}
 $$
 
 $$
-B(u(x, t), x, t)=\begin{cases}
-\sin (\pi x), & \text { if } t=1 \\
-0, & \text { if } t=0 \\
+\mathcal{B}(u(\boldsymbol{x}), \boldsymbol{x}): =\begin{cases}
+u(x,y) - \sin (\pi x), & \text { if } y=0 \\
+u(x,y) - c_b(x), & \text { if } y=1 \\
 0, & \text { if } x=0 \\
 0, & \text { if } x=1
 \end{cases}
 $$
 
-2. Burgers equations (simple model of viscous fluid motions)
-
-$$
-\begin{aligned}
-& F(u(x, t), x, t)=\frac{\partial u}{\partial t}+u \frac{\partial u}{\partial x}-\nu \frac{\partial^2 u}{\partial x^2}\\
-& B(u(x,t),x,t)=\text{periodic boundary conditions} \\
-& I(u(x,t),x,t)=u(x,t) - \text{"analytic solution at t=0"}
-\end{aligned}
-$$
-
-3. Kuromoto-Sivashinsky equations (models the diffusive–thermal instabilities in a laminar flame front)
-
-$$
-\begin{aligned}
-& F(u(x, t), x, t)=\frac{\partial u}{\partial t}+u \frac{\partial u}{\partial t}+\frac{\partial^2 u}{\partial x^2}+\frac{\partial^4 u}{\partial x^4}-f(x, t) \\
-& B(u(x,t),x,t)=\text{periodic boundary conditions} \\
-& I(u(x,t),x,t)=u(x,0)-\cos \left(\frac{2 \pi x}{10}\right)-\text{sech}\left(\frac{x-L / 2}{5}\right)
-\end{aligned}
-$$
-
-4. Navier-Stokes equations (general model of viscous fluid motions)
-
-$$
-\begin{aligned}
-& F_1(u(x, t), x, t)=(u \cdot \nabla) u+\nabla p-\frac{1}{\text{Re}} \nabla^2 u \\
-& F_2(u(x, t), x, t)=\nabla \cdot u
-\end{aligned}
-$$
-
-Optimal control PDE problem: 
-Solve $\text{argmin}_{c\in \mathcal{C}} \mathcal{J}(u)$, where
-- [Volume] $\mathcal{F}(u(x, t), x, t; c_v(x,t))=0$ for all $x \in \Omega, t \in[0, T]$
-- [Boundary] $\mathcal{B}(u(x, t), x, t; c_b(x,t))=0$ for all $x \in$ boundary of $\Omega, \mathrm{t} \in[0, T]$
-- [Initial] $\mathcal{I}(u(x, 0), x; c_0(x))=0$ for all $x \in \Omega$
-
-Examples:
-1. Laplace equations + control
-
 $$
 \mathcal{J}(u)=\int_0^1\left|\frac{\partial u}{\partial y}(x, 1)-q_d(x)\right|^2 d x, \quad q_d(x)=\cos (\pi x)
 $$
 
-2. Burgers equations + control
-$$\mathcal{J}(u)=\frac{1}{2} \int_0^L\left|u(x, T)-u_a(x, T)\right|^2 d x $$
+Note: for the Laplace equations, there is no time component as these equations describe steady states. Consequently, there are no initial conditions.
 
-3. Kuromoto-Sivashinsky equations + control
-$$\mathcal{J}(u, f)=\frac{1}{2} \int_0^T \int_0^L\left(|u(x, t)|^2+\sigma|f(x, t)|^2\right) d x d t$$
+Interpretation: find the potential $c_b(\boldsymbol{x})$ at the top wall $\{(x,1):x\in[0,1]\}$ that produces the desired flux $q_d(x)$.
 
-4. Navier-Stokes equations + control
-$$\mathcal{J}(\mathbf{u})=\frac{1}{2} \int_0^{L_y}\left(\left|u\left(L_x, y\right)-u_{\text {parab }}(y)\right|^2+\left|v\left(L_x, y\right)\right|^2\right) d y, \quad u_{\text {parab }}(y)=\frac{4}{L_y^2} y(1-y)$$
+2. **1-D Burgers equations** (models velocity of viscous fluid in a thin tube): Let $\Omega=[0,L]$ with $L=4$, viscosity $\nu=0.01$, and $T=5$. Denote $u(x,t)$ to be the velocity at position $x$ and time $t$.
+
+$$
+\begin{aligned}
+& \mathcal{F}(u(x, t), x, t)=\frac{\partial u}{\partial t}+u \frac{\partial u}{\partial x}-\nu \frac{\partial^2 u}{\partial x^2}\\
+& \mathcal{B}(u(x,t),x,t)=\text{periodic boundary conditions} \\
+& \mathcal{I}(u(x),x; c_0(x))=u(x,0) - c_0(x)
+\end{aligned}
+$$
+
+$$
+\mathcal{J}(u)=\frac{1}{2} \int_0^L\left|u(x, T)-u_a(x, T)\right|^2 d x 
+$$
+where
+$$
+u_{a}(x, t)=\frac{2 \nu \pi e^{-\pi^{2} \nu(t-5)} \sin (\pi x)}{2+e^{-\pi^{2} \nu(t-5)} \cos (\pi x)} .
+$$
+
+We know analytically that $c_0(x)=u_a(x,0)$ is the unique optimal solution.
+
+Interpretation: find the initial condition $c_0(x)=u(x,0)$ that produces the same final state as the analytical solution, $u_a(x,T)$.
+
+3. **1-D Kuromoto-Sivashinsky equations** (models the diffusive-thermal instabilities in a laminar flame front): Let $\Omega=[0,L]$, $L=50$, and $T=10$. Denote $u(x,t)$ to be the velocity at position $x$ and time $t$.
+
+$$
+\begin{aligned}
+& \mathcal{F}(u(x, t), x, t; c_v(x,t))=\frac{\partial u}{\partial t}+u \frac{\partial u}{\partial t}+\frac{\partial^2 u}{\partial x^2}+\frac{\partial^4 u}{\partial x^4}-c_v(x, t) \\
+& \mathcal{B}(u(x,t),x,t)=\text{periodic boundary conditions} \\
+& \mathcal{I}(u(x,t),x,t)=u(x,0)-\cos \left(\frac{2 \pi x}{10}\right)-\text{sech}\left(\frac{x-L / 2}{5}\right)
+\end{aligned}
+$$
+
+$$
+\mathcal{J}(\boldsymbol{u}, \boldsymbol{c})=\frac{1}{2} \int_0^T \int_0^L\left(|u(x, t)|^2+|c_v(x, t)|^2\right) d x d t
+$$
+
+Interpretation: Find the control force $c_v(x,t)$ that drives the system state towards the unstable zero fixed-point solution.
+
+Note: This formulation mimics the classical problem in control theory of finding a controller that drives the state of a dynamical system towards an unstable fixed point, which is usually solved by minimizing a quadratic cost functional of the same form as $\mathcal{J}(\boldsymbol{u},\boldsymbol{c})$.
+
+4. **2-D Incompressible Navier-Stokes equations** (general model of viscous fluid motions): Let $\Omega=[L_x,L_y]$ and Reynolds number $Re=100$. Denote $\boldsymbol{u}:\Omega\to \mathbb{R}^2, (x,y)\mapsto (u_1(x,y),u_2(x,y))$ to be the velocity field and $p:\Omega\to \mathbb{R}, (x,y)\mapsto p(x,y)$ to be the pressure at position $\boldsymbol{x}$.
+
+$$
+\begin{aligned}
+& \mathcal{F}_1(\boldsymbol{u}(\boldsymbol{x}), \boldsymbol{x})=(\boldsymbol{u} \cdot \nabla) \boldsymbol{u}+\nabla p-\frac{1}{Re} \nabla^2 \boldsymbol{u} \\
+& \mathcal{F}_2(\boldsymbol{u}(\boldsymbol{x}), \boldsymbol{x})=\nabla \cdot \boldsymbol{u}
+\end{aligned}
+$$
+
+$$
+\mathcal{J}(\boldsymbol{u})=\frac{1}{2} \int_0^{L_y}\left(\left|u_1\left(L_x, y\right)-u_{\text {parab}}(y)\right|^2+\left|u_2\left(L_x, y\right)\right|^2\right) d y, \quad u_{\text {parab}}(y)=\frac{4}{L_y^2} y(1-y)
+$$
+
 
 ## Methodology
 
@@ -103,13 +123,14 @@ $\left\{\mathbf{x}_i^r, t_i^r\right\}_{i=1}^{N_r},\left\{\mathbf{x}_i^b, t_i^b\r
 
 Line search method:
 
-Solve forward problem once to tune network architecture, distribution of residual points, training hyperparameters (number of epochs, batch size, etc), and weights 𝑤_𝑟, 𝑤_𝑏, and 𝑤_0.
+Solve forward problem once to tune network architecture, distribution of residual points, training hyperparameters (number of epochs, batch size, etc), and weights $w_r$, $w_b$, and $w_0$.
 
-For each 𝑤_𝒥  in a range of values:
-Fixing u_NN, train c_NN*
-Fixing c_NN*, train u_NN’
-Fixing u_NN’, train c_NN’
-Return c_NN’ corresponding to the lowest value of J(u_NN’,c_NN’)
+For each $w_{\mathcal{J}}$  in a range of values:
+- Fixing $u_{NN}$, train $c_{NN}^*$
+- Fixing $c_{NN}^*$, train $u'_{NN}$
+- Fixing $u'_{NN}$, train $c'_{NN}$
+
+Return $c'_{NN}$ corresponding to the lowest value of $\mathcal{J}(u'_{NN},c'_{NN})$
 
 ### Adjoint-based methods
 
@@ -211,6 +232,14 @@ LHS: a square grid containing sample positions is a Latin square if (and only if
 - 10k epochs
 - We repeat this procedure for 11 values of $w_J$ between $10^{-3}$ and $10^7$ (**downside: need to select this hyperparameter in practice**)
 
+This optimal control problem has the following analytical solution:
+$$
+\begin{aligned}
+f_{a}^{*}(x) & =\operatorname{sech}(2 \pi) \sin (2 \pi x)+\frac{1}{2 \pi} \tanh (2 \pi) \cos (2 \pi x) \\
+u_{a}^{*}(x, y) & =\frac{1}{2} \operatorname{sech}(2 \pi) \sin (2 \pi x)\left(e^{2 \pi(y-1)}+e^{2 \pi(1-y)}\right)+\frac{1}{4 \pi} \operatorname{sech}(2 \pi) \cos (2 \pi x)\left(e^{2 \pi y}-e^{-2 \pi y}\right),
+\end{aligned}
+$$
+
 Burgers equation:
 
 Kuramoto-Sivashinsky equation:
@@ -272,3 +301,8 @@ Cannot incorporate training data
 
 ### Potential Improvements
 To improve time efficiency, use PDE approach that learns from training data to generate initial solution, then apply PINNs or DAL.
+
+
+### Interesting questions
+
+How can implicit regularization of deep neural networks lead to nice solutions for PDEs?
