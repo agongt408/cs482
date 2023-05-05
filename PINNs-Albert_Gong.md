@@ -21,11 +21,11 @@ where $\boldsymbol{u} :=u(\boldsymbol{x},t)$ and $\boldsymbol{c}(\boldsymbol{x},
 - *Boundary constraint:* $\mathcal{B}(u(\boldsymbol{x}, t), \boldsymbol{x}, t; c_b(\boldsymbol{x},t))=0$ for all $x \in \partial \Omega, \mathrm{t} \in[0, T]$, where $\partial \Omega$ denotes the boundary of $\Omega$
 - *Initial constraint:* $\mathcal{I}(u(\boldsymbol{x}, 0), \boldsymbol{x}; c_0(\boldsymbol{x}))=0$ for all $\boldsymbol{x} \in \Omega$
 
-Here, $\mathcal{F}$, $\mathcal{B}$, and $\mathcal{I}$ denote differential operators. We illustrate the problem statement with several real-world examples.
+Here, $\mathcal{F}$, $\mathcal{B}$, and $\mathcal{I}$ denote differential operators, which we keep intentionally vague to capture a wide variety of problems, as we will illustrate through the examples below.
 
 ### Examples
 
-1. **Laplace equations** (models steady-state of heat dissipation): Let $\Omega=[0,1]\times [0,1]$ and denote $\boldsymbol{x}=(x,y)$.
+1. **2-D Laplace equations** (models steady-state of heat dissipation): Let $\Omega=[0,1]\times [0,1]$ and denote $\boldsymbol{x}=(x,y)$.
 
 $$
 \mathcal{F}(u(\boldsymbol{x}), \boldsymbol{x}; c_v(\boldsymbol{x})) :=\frac{\partial^2 u}{\partial x^2}+\frac{\partial^2 u}{\partial y^2}
@@ -105,10 +105,10 @@ $$
 & \mathcal{B}_3(\boldsymbol{u}(\boldsymbol{x}), \boldsymbol{x}) := (\mathbf{n} \cdot \nabla) \mathbf{u}, \quad \boldsymbol{x}\in \Gamma_{o} \\
 & \mathcal{B}_4(\boldsymbol{u}(\boldsymbol{x}), \boldsymbol{x}):=\boldsymbol{u} , \quad \boldsymbol{x}\in  \Gamma_{w} \\
 & \mathcal{B}_5(p(\boldsymbol{x}), \boldsymbol{x}) := (\mathbf{n} \cdot \nabla) p, \quad \boldsymbol{x} \in \Gamma_{i} \cup \Gamma_{b} \cup \Gamma_{s} \cup \Gamma_{w} \\
-& \mathcal{B}_6(p(\boldsymbol{x}), \boldsymbol{x}) := p-p_a, \quad \boldsymbol{x} \in \Gamma_{o}
+& \mathcal{B}_6(p(\boldsymbol{x}), \boldsymbol{x}) := p, \quad \boldsymbol{x} \in \Gamma_{o}
 \end{aligned} 
 $$
-where $\Gamma_{i}$ refers to the inlet on the left, $\Gamma_{b}$ refers to the blowing boundary on the bottom, $\Gamma_{s}$ refers to the suction boundary on the top,  $\Gamma_{o}$ refers to the outflow boundary on the right, and $\Gamma_{w}$ refers to the no-slip walls (see figure below). 
+where $\boldsymbol{n}$ denotes the unit surface normal, $\Gamma_{i}$ refers to the inlet on the left, $\Gamma_{b}$ refers to the blowing boundary on the bottom, $\Gamma_{s}$ refers to the suction boundary on the top,  $\Gamma_{o}$ refers to the outflow boundary on the right, and $\Gamma_{w}$ refers to the no-slip walls (see figure below). 
 <!-- $u_{in}$, $v_b$, and $v_s$ correspond to presecribed velocity profiles, ?? -->
 
 ![](https://cdn.mathpix.com/cropped/2023_05_03_190f21dadd78273f9933g-17.jpg?height=509&width=811&top_left_y=385&top_left_x=700)
@@ -124,7 +124,7 @@ Note: Similar to the Laplace equations, there is no time component. Consequently
 
 ## Methodology
 
-Model $u(x,t)$ using a fully-connected neural network $u_{NN}(x,t; \theta_u)$ with parameters $\theta$ and inputs $x$ and $t$. Model $c(x,t)$ using fully-connected neural network $u_{NN}(x,t; \theta_c)$ with parameters $\theta_c$, respectively, and inputs $x$ and $t$. Approximate the optimal control PDE problem by the following optimization problem: 
+We estimate $u(\boldsymbol{x},t)$ using a fully-connected neural network $u_{NN}(\boldsymbol{x},t; \boldsymbol{\theta}_{\boldsymbol{u}})$ parameterized by $\boldsymbol{\theta}_{\boldsymbol{u}}$. We also estimate $c(\boldsymbol{x},t)$ using fully-connected neural network $c_{NN}(x,t; \boldsymbol{\theta}_{\boldsymbol{c}})$ with parameters $\theta_c$, respectively, and inputs $x$ and $t$. Approximate the optimal control PDE problem by the following optimization problem: 
 
 $$
 \text{argmin}_{\theta_{u},\theta_{c}} \mathcal{L}\left(\theta_{u}, \theta_{c} \right)
@@ -134,25 +134,35 @@ where
 
 $$
 \begin{aligned}
-\mathcal{L}\left(\boldsymbol{\theta}_{\mathbf{u}}, \boldsymbol{\theta}_{\mathbf{c}}\right)= & \frac{w_r}{N_r} \sum_{i=1}^{N_r}\left|\mathcal{F}\left[\mathbf{u}_{\mathrm{NN}}\left(\mathbf{x}_i^r, t_i^r ; \boldsymbol{\theta}_{\mathbf{u}}\right) ; \mathbf{c}_{\mathrm{NN}}\left(\mathbf{x}_i^r, t_i^r ; \boldsymbol{\theta}_{\mathbf{c}}\right)\right]\right|^2+\frac{w_b}{N_b} \sum_{i=1}^{N_b}\left|\mathcal{B}\left[\mathbf{u}_{\mathrm{NN}}\left(\mathbf{x}_i^b, t_i^b ; \boldsymbol{\theta}_{\mathbf{u}}\right) ; \mathbf{c}_{\mathrm{NN}}\left(\mathbf{x}_i^b, t_i^b ; \boldsymbol{\theta}_{\mathbf{c}}\right)\right]\right|^2 \\
+\mathcal{L}\left(\boldsymbol{\theta}_{\boldsymbol{u}}, \boldsymbol{\theta}_{\boldsymbol{c}}\right) := & \frac{w_r}{N_r} \sum_{i=1}^{N_r}\left|\mathcal{F}\left[\mathbf{u}_{\mathrm{NN}}\left(\mathbf{x}_i^r, t_i^r ; \boldsymbol{\theta}_{\mathbf{u}}\right) ; \mathbf{c}_{\mathrm{NN}}\left(\mathbf{x}_i^r, t_i^r ; \boldsymbol{\theta}_{\mathbf{c}}\right)\right]\right|^2+\frac{w_b}{N_b} \sum_{i=1}^{N_b}\left|\mathcal{B}\left[\mathbf{u}_{\mathrm{NN}}\left(\mathbf{x}_i^b, t_i^b ; \boldsymbol{\theta}_{\mathbf{u}}\right) ; \mathbf{c}_{\mathrm{NN}}\left(\mathbf{x}_i^b, t_i^b ; \boldsymbol{\theta}_{\mathbf{c}}\right)\right]\right|^2 \\
 & +\frac{w_0}{N_0} \sum_{i=1}^{N_0}\left|\mathcal{I}\left[\mathbf{u}_{\mathrm{NN}}\left(\mathbf{x}_i^0, 0 ; \boldsymbol{\theta}_{\mathbf{u}}\right); \mathbf{c}_{\mathrm{NN}}\left(\mathbf{x}_i^0, 0 ; \boldsymbol{\theta}_{\mathbf{c}}\right)\right]\right|^2+w_{\mathcal{J}} \mathcal{L}_{\mathcal{J}}\left(\boldsymbol{\theta}_{\mathbf{u}}, \boldsymbol{\theta}_{\mathbf{c}}\right),
 \end{aligned}
 $$
 
 $\left\{\mathbf{x}_i^r, t_i^r\right\}_{i=1}^{N_r},\left\{\mathbf{x}_i^b, t_i^b\right\}_{i=1}^{N_b},\left\{\mathbf{x}_i^0\right\}_{i=1}^{N_0}$ represent training samples to estimate the volume, boundary, and initial conditions, and $w_r,w_b,w_0,w_{\mathcal{J}}$ are loss weights.
 
-Line search method:
+We use the following iterative gradient algorithm to solve the optimization problem. Starting from randomly initialized paramters $(\boldsymbol{\theta}_{\boldsymbol{u}},\boldsymbol{\theta}_{\boldsymbol{c}})$, we update the parameters via
 
-Solve forward problem once to tune network architecture, distribution of residual points, training hyperparameters (number of epochs, batch size, etc), and weights $w_r$, $w_b$, and $w_0$.
+$$
+\begin{aligned}
+\boldsymbol{\theta}_{\mathbf{u}}^{k+1} & = \boldsymbol{\theta}_{\mathbf{u}}^{k}-\alpha(k) \nabla_{\boldsymbol{\theta}_{\mathbf{u}}} \mathcal{L}\left(\boldsymbol{\theta}_{\mathbf{u}}^{k}, \boldsymbol{\theta}_{\mathbf{c}}^{k}\right), \\
+\boldsymbol{\theta}_{\mathbf{c}}^{k+1} & =\boldsymbol{\theta}_{\mathbf{c}}^{k}-\alpha(k) \nabla_{\boldsymbol{\theta}_{\mathbf{c}}} \mathcal{L}\left(\boldsymbol{\theta}_{\mathbf{u}}^{k}, \boldsymbol{\theta}_{\mathbf{c}}^{k}\right) .
+\end{aligned}
+$$
 
-For each $w_{\mathcal{J}}$  in a range of values:
-- Fixing $u_{NN}$, train $c_{NN}^*$
-- Fixing $c_{NN}^*$, train $u'_{NN}$
-- Fixing $u'_{NN}$, train $c'_{NN}$
+where $\alpha(k)$ is an adaptive learning rate set by the chosen optimizer.
 
-Return $c'_{NN}$ corresponding to the lowest value of $\mathcal{J}(u'_{NN},c'_{NN})$
+Note the components in the loss function $\mathcal{L}\left(\boldsymbol{\theta}_{\boldsymbol{u}}, \boldsymbol{\theta}_{\boldsymbol{c}}\right)$ may have competing objectives. For example, by decreasing ??, we may increase ??. To tune the hyperparameter $w_{\mathcal{J}}$, the authors propose a two-step line search strategy, which roughly goes as follows:
 
-### Adjoint-based methods
+- Solve forward problem once to tune network architecture, distribution of residual points, training hyperparameters (number of epochs, batch size, etc), and weights $w_r$, $w_b$, and $w_0$.
+
+- For each $w_{\mathcal{J}}$  in a range of values:
+    - Fixing $u_{NN}$, train $c_{NN}^*$
+    - Fixing $c_{NN}^*$, train $u'_{NN}$
+    - Fixing $u'_{NN}$, train $c'_{NN}$
+- Return $c'_{NN}$ corresponding to the lowest value of $\mathcal{J}(u'_{NN},c'_{NN})$
+
+<!-- ### Adjoint-based methods
 
 TODO: Explain adjoint method
 - iterative methods, such as the direct-adjoint-looping algorithm
@@ -222,15 +232,17 @@ We can solve this using the direct-adjoint looping (DAL) iterative algorithm. At
 3. Update the control via
 $$
 \mathbf{c}^{k+1}=\mathbf{c}^{k}-\beta \frac{\mathrm{d} \mathcal{J}\left(\mathbf{u}^{k}, \mathbf{c}^{k}\right)}{\mathrm{d} \mathbf{c}}
-$$
+$$ -->
 
-### Implementation
+### Implementation Details
 
 The PINN solutions are trained on one GPU (Tesla V100) in TensorFlow. The DAL solutions are all computed using a single CPU core (Core i7-4980HQ or Xeon E5-2683), using the C++ finite-volume solver OpenFOAM for the Laplace and Navier-Stokes equations, and a spectral Python code for the Burgers and Kuramoto-Sivashinsky equations.
 
+
+
 ## Results
 
-### Forward Problem
+<!-- ### Forward Problem
 
 Laplace equation:
 - Training strategy: we sample 10000 residual training points using a Latin hypercube sampling strategy and we select 160 equally-spaced boundary training points on the boundary of the domain
@@ -240,31 +252,54 @@ Burgers equation:
 
 Kuramoto-Sivashinsky equation:
 
-Navier-Stokes equations:
+Navier-Stokes equations: -->
 
-### Optimal Control Problem
+### Accuracy
 
-Laplace equation:
-- Training strategy: we sample 10000 residual training points using a Latin hypercube sampling strategy and we select 160 equally-spaced boundary training points on the boundary of the domain
+For each example, we compare the solution found using the proposed PINN-based approach to the solution found using DAL and the analytical solution (if known).
+
+
+1. **2-D Laplace equations**
+
+<!-- - Training strategy: we sample 10000 residual training points using a Latin hypercube sampling strategy and we select 160 equally-spaced boundary training points on the boundary of the domain
 
 LHS: a square grid containing sample positions is a Latin square if (and only if) there is only one sample in each row and each column
 
 - 10k epochs
-- We repeat this procedure for 11 values of $w_J$ between $10^{-3}$ and $10^7$ (**downside: need to select this hyperparameter in practice**)
+- We repeat this procedure for 11 values of $w_J$ between $10^{-3}$ and $10^7$ (**downside: need to select this hyperparameter in practice**) -->
 
-This optimal control problem has the following analytical solution:
+![](https://cdn.mathpix.com/cropped/2023_05_03_190f21dadd78273f9933g-11.jpg?height=882&width=1562&top_left_y=387&top_left_x=224)
+
+The analytical solution to the optimal control problem is
 $$
-\begin{aligned}
-f_{a}^{*}(x) & =\operatorname{sech}(2 \pi) \sin (2 \pi x)+\frac{1}{2 \pi} \tanh (2 \pi) \cos (2 \pi x) \\
-u_{a}^{*}(x, y) & =\frac{1}{2} \operatorname{sech}(2 \pi) \sin (2 \pi x)\left(e^{2 \pi(y-1)}+e^{2 \pi(1-y)}\right)+\frac{1}{4 \pi} \operatorname{sech}(2 \pi) \cos (2 \pi x)\left(e^{2 \pi y}-e^{-2 \pi y}\right),
-\end{aligned}
+c_{a}^{*}(x) =\text{sech}(2 \pi) \sin (2 \pi x)+\frac{1}{2 \pi} \tanh (2 \pi) \cos (2 \pi x)
 $$
 
-Burgers equation:
+<!-- Figure 3 - Optimal solution of the Laplace control problem 25. (a) Components of the loss 20 obtained at the training of the PINN optimal control solution versus weight $w_{\mathcal{J}}$ (step 1 of the line search strategy). (b) Cost objective estimate obtained by a separate PINN solution of the forward problem with fixed control from the PINN optimal solution versus $w_{\mathcal{J}}$ (step 2 of the line search strategy). The best optimal control, obtained with $w_{\mathcal{J}}=100$, is shown by the red dot. (c) Convergence of the loss during training of the PINN optimal control solution (for $w_{\mathcal{J}}=100$ ). (d) Convergence of the cost objective during DAL iterations. (e) Optimal top wall potential $f^{*}$ obtained from the PINN (for $w_{\mathcal{J}}=100$ ) and DAL frameworks, compared with the top wall potential $f_{a}^{*}$ of the analytical solution. -->
 
-Kuramoto-Sivashinsky equation:
 
-Navier-Stokes equations:
+2. **1-D Burgers equations**
+
+![](https://cdn.mathpix.com/cropped/2023_05_03_190f21dadd78273f9933g-13.jpg?height=874&width=1558&top_left_y=390&top_left_x=224)
+
+The analytical solution to the optimal control problem is
+$$
+c_{a}^*(x)=\frac{2 \nu \pi e^{5\pi^{2} \nu} \sin (\pi x)}{2+e^{5\pi^{2} \nu} \cos (\pi x)} .
+$$
+
+<!-- Figure 5 - Optimal solution of the Burgers control problem 30. (a) Components of the loss 20 obtained at the end of training of the PINN optimal control solution versus weight $w_{\mathcal{J}}$ (step 1 of the line search strategy). (b) Cost objective estimate obtained by a separate PINN solution of the forward problem with fixed control from the PINN optimal solution versus $w_{\mathcal{J}}$ (step 2 of the line search strategy). The best optimal control, obtained with $w_{\mathcal{J}}=1$, is shown by the red dot. (c) Convergence of the loss during training of the PINN optimal control solution (for $w_{\mathcal{J}}=1$ ). (d) Convergence of the cost objective during DAL iterations. (e) Optimal initial condition $u_{0}^{*}$ obtained using the PINN (for $w_{\mathcal{J}}=1$ ) and DAL frameworks, compared with the initial state of the analytical solution. (f) Snapshots at final time of two spectral solutions calculated using the optimal initial conditions $u_{0}^{*}$ from the PINN Convergence of the loss during training of the PINN optimal control solution (for $w_{\mathcal{J}}=1$ ) and DAL frameworks, compared with the final state of the analytical solution. -->
+
+3. **1-D Kuramoto-Sivashinsky equations**
+
+![](https://cdn.mathpix.com/cropped/2023_05_03_190f21dadd78273f9933g-16.jpg?height=1320&width=1592&top_left_y=654&top_left_x=220)
+
+<!-- Figure 7 - Optimal solution of the KS control problem 34. (a) Components of the loss 20 obtained at the end of training of the PINN optimal control solution versus weight $w_{\mathcal{J}}$ (step 1 of the line search strategy). (b) Cost objective estimate obtained by a separate PINN solution of the forward problem with fixed control from the PINN optimal solution versus $w_{\mathcal{J}}$ (step 2 of the line search strategy). The best optimal control, obtained with $w_{\mathcal{J}}=10^{-3}$, is shown by the red dot. (c) Convergence of the loss during training of the PINN optimal control solution (for $w_{\mathcal{J}}=10^{-3}$ ). (d) Convergence of the cost objective during DAL iterations. (e,f) Optimal control forces $f^{*}$ obtained from the PINN (for $w_{\mathcal{J}}=10^{-3}$ ) and DAL frameworks. (g,h,i) Snapshots at final time and contour plots of two spectral solutions calculated using the optimal control forces $f^{*}$ obtained from the PINN (for $w_{\mathcal{J}}=10^{-3}$ ) and DAL frameworks.  -->
+
+4. **2-D incompressible Navier-Stokes equations**
+
+![](https://cdn.mathpix.com/cropped/2023_05_03_190f21dadd78273f9933g-21.jpg?height=1678&width=1610&top_left_y=434&top_left_x=220)
+
+<!-- Figure 10 - Optimal solution of the Navier-Stokes control problem 39 . (a) Components of the loss 20 obtained at the end of training of the PINN optimal control solution versus weight $w_{\mathcal{J}}$ (step 1 of the line search strategy). (b) Cost objective estimate obtained by a separate PINN solution of the forward problem with fixed control from the PINN optimal solution versus $w_{\mathcal{J}}$ (step 2 of the line search strategy). The best optimal control, obtained with $w_{\mathcal{J}}=30$, is shown by the red dot. (c) Convergence of the loss during training of the PINN optimal control solution (for $w_{\mathcal{J}}=30$ ). (d) Convergence of the cost objective during DAL iterations. (e) Optimal inlet velocity profiles $u_{\text {in }}^{*}$ obtained using the PINN (for $w_{\mathcal{J}}=30$ ) and DAL frameworks. (f) Outlet velocity profiles of two forward OpenFOAM solutions calculated using the optimal inlet profiles $u_{\text {in }}^{*}$ from the PINN (for $w_{\mathcal{J}}=30$ ) and DAL frameworks, compared with the target parabolic profile. (f,g,h,i) Velocity magnitude, streamlines and pressure fields of the OpenFOAM solutions calculated using the optimal inlet profiles $u_{\text {in }}^{*}$ from the PINN (for $\left.w_{\mathcal{J}}=30\right)$ and DAL frameworks.  -->
 
 ### Computational Efficiency
 
