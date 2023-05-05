@@ -44,9 +44,9 @@ $$
 \mathcal{J}(u) :=\int_0^1\left|\frac{\partial u}{\partial y}(x, 1)-q_d(x)\right|^2 d x, \quad q_d(x)=\cos (\pi x)
 $$
 
-Note: for the Laplace equations, there is no time component as these equations describe steady states. Consequently, there are no initial conditions.
-
 Interpretation: find the potential $c_b(\boldsymbol{x})$ at the top wall $\{(x,1):x\in[0,1]\}$ that produces the desired flux $q_d(x)$.
+
+Note: for the Laplace equations, there is no time component as these equations describe steady states. Consequently, there are no initial conditions.
 
 2. **1-D Burgers equations** (models velocity of viscous fluid in a thin tube): Let $\Omega=[0,L]$ with $L=4$, viscosity $\nu=0.01$, and $T=5$. Denote $u(x,t)$ to be the velocity at position $x$ and time $t$.
 
@@ -111,14 +111,16 @@ $$
 where $\Gamma_{i}$ refers to the inlet on the left, $\Gamma_{b}$ refers to the blowing boundary on the bottom, $\Gamma_{s}$ refers to the suction boundary on the top,  $\Gamma_{o}$ refers to the outflow boundary on the right, and $\Gamma_{w}$ refers to the no-slip walls (see figure below). 
 <!-- $u_{in}$, $v_b$, and $v_s$ correspond to presecribed velocity profiles, ?? -->
 
+![](https://cdn.mathpix.com/cropped/2023_05_03_190f21dadd78273f9933g-17.jpg?height=509&width=811&top_left_y=385&top_left_x=700)
+
 We now define
 $$
 \mathcal{J}(\boldsymbol{u}) := \frac{1}{2} \int_0^{L_y}\left(\left|u_1\left(L_x, y\right)-u_{\text {parab}}(y)\right|^2+\left|u_2\left(L_x, y\right)\right|^2\right) d y, \quad u_{\text {parab}}(y) := \frac{4}{L_y^2} y(1-y)
 $$
 
-![](https://cdn.mathpix.com/cropped/2023_05_03_190f21dadd78273f9933g-17.jpg?height=509&width=811&top_left_y=385&top_left_x=700)
-
 Interpretation: Find the inlet velocity profile $c_b$ such that the outlet velocity profile is close to parabolic.
+
+Note: Similar to the Laplace equations, there is no time component. Consequently, there are no initial conditions.
 
 ## Methodology
 
