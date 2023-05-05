@@ -41,7 +41,7 @@ u(x,y) - c_b(x), & \text { if } y=1 \\
 $$
 
 $$
-\mathcal{J}(u)=\int_0^1\left|\frac{\partial u}{\partial y}(x, 1)-q_d(x)\right|^2 d x, \quad q_d(x)=\cos (\pi x)
+\mathcal{J}(u) :=\int_0^1\left|\frac{\partial u}{\partial y}(x, 1)-q_d(x)\right|^2 d x, \quad q_d(x)=\cos (\pi x)
 $$
 
 Note: for the Laplace equations, there is no time component as these equations describe steady states. Consequently, there are no initial conditions.
@@ -52,14 +52,14 @@ Interpretation: find the potential $c_b(\boldsymbol{x})$ at the top wall $\{(x,1
 
 $$
 \begin{aligned}
-& \mathcal{F}(u(x, t), x, t)=\frac{\partial u}{\partial t}+u \frac{\partial u}{\partial x}-\nu \frac{\partial^2 u}{\partial x^2}\\
-& \mathcal{B}(u(x,t),x,t)=\text{periodic boundary conditions} \\
+& \mathcal{F}(u(x, t), x, t):= \frac{\partial u}{\partial t}+u \frac{\partial u}{\partial x}-\nu \frac{\partial^2 u}{\partial x^2}\\
+& \mathcal{B}(u(x,t),x,t) := \text{periodic boundary conditions} \\
 & \mathcal{I}(u(x),x; c_0(x))=u(x,0) - c_0(x)
 \end{aligned}
 $$
 
 $$
-\mathcal{J}(u)=\frac{1}{2} \int_0^L\left|u(x, T)-u_a(x, T)\right|^2 d x 
+\mathcal{J}(u): =\frac{1}{2} \int_0^L\left|u(x, T)-u_a(x, T)\right|^2 d x 
 $$
 where
 $$
@@ -74,33 +74,51 @@ Interpretation: find the initial condition $c_0(x)=u(x,0)$ that produces the sam
 
 $$
 \begin{aligned}
-& \mathcal{F}(u(x, t), x, t; c_v(x,t))=\frac{\partial u}{\partial t}+u \frac{\partial u}{\partial t}+\frac{\partial^2 u}{\partial x^2}+\frac{\partial^4 u}{\partial x^4}-c_v(x, t) \\
-& \mathcal{B}(u(x,t),x,t)=\text{periodic boundary conditions} \\
-& \mathcal{I}(u(x,t),x,t)=u(x,0)-\cos \left(\frac{2 \pi x}{10}\right)-\text{sech}\left(\frac{x-L / 2}{5}\right)
+& \mathcal{F}(u(x, t), x, t; c_v(x,t)) :=\frac{\partial u}{\partial t}+u \frac{\partial u}{\partial t}+\frac{\partial^2 u}{\partial x^2}+\frac{\partial^4 u}{\partial x^4}-c_v(x, t) \\
+& \mathcal{B}(u(x,t),x,t) :=\text{periodic boundary conditions} \\
+& \mathcal{I}(u(x,t),x,t) :=u(x,0)-\cos \left(\frac{2 \pi x}{10}\right)-\text{sech}\left(\frac{x-L / 2}{5}\right)
 \end{aligned}
 $$
 
 $$
-\mathcal{J}(\boldsymbol{u}, \boldsymbol{c})=\frac{1}{2} \int_0^T \int_0^L\left(|u(x, t)|^2+|c_v(x, t)|^2\right) d x d t
+\mathcal{J}(\boldsymbol{u}, \boldsymbol{c}) :=\frac{1}{2} \int_0^T \int_0^L\left(|u(x, t)|^2+|c_v(x, t)|^2\right) d x d t
 $$
 
 Interpretation: Find the control force $c_v(x,t)$ that drives the system state towards the unstable zero fixed-point solution.
 
 Note: This formulation mimics the classical problem in control theory of finding a controller that drives the state of a dynamical system towards an unstable fixed point, which is usually solved by minimizing a quadratic cost functional of the same form as $\mathcal{J}(\boldsymbol{u},\boldsymbol{c})$.
 
-4. **2-D Incompressible Navier-Stokes equations** (general model of viscous fluid motions): Let $\Omega=[L_x,L_y]$ and Reynolds number $Re=100$. Denote $\boldsymbol{u}:\Omega\to \mathbb{R}^2, (x,y)\mapsto (u_1(x,y),u_2(x,y))$ to be the velocity field and $p:\Omega\to \mathbb{R}, (x,y)\mapsto p(x,y)$ to be the pressure at position $\boldsymbol{x}$.
+4. **2-D Incompressible Navier-Stokes equations** (general model of viscous fluid motions): Let $\Omega=[0,L_x]\times [0,L_y]$ with $L_x=1.5$, $L_y=1$ and Reynolds number $Re=100$. Denote $\boldsymbol{u}:\Omega\to \mathbb{R}^2, (x,y)\mapsto (u_1(x,y),u_2(x,y))$ to be the velocity field and $p:\Omega\to \mathbb{R}, (x,y)\mapsto p(x,y)$ to be the pressure at position $\boldsymbol{x}$.
 
 $$
 \begin{aligned}
-& \mathcal{F}_1(\boldsymbol{u}(\boldsymbol{x}), \boldsymbol{x})=(\boldsymbol{u} \cdot \nabla) \boldsymbol{u}+\nabla p-\frac{1}{Re} \nabla^2 \boldsymbol{u} \\
-& \mathcal{F}_2(\boldsymbol{u}(\boldsymbol{x}), \boldsymbol{x})=\nabla \cdot \boldsymbol{u}
+& \mathcal{F}_1(\boldsymbol{u}(\boldsymbol{x}), \boldsymbol{x}) :=(\boldsymbol{u} \cdot \nabla) \boldsymbol{u}+\nabla p-\frac{1}{Re} \nabla^2 \boldsymbol{u} \\
+& \mathcal{F}_2(\boldsymbol{u}(\boldsymbol{x}), \boldsymbol{x}):=\nabla \cdot \boldsymbol{u}
 \end{aligned}
 $$
 
 $$
-\mathcal{J}(\boldsymbol{u})=\frac{1}{2} \int_0^{L_y}\left(\left|u_1\left(L_x, y\right)-u_{\text {parab}}(y)\right|^2+\left|u_2\left(L_x, y\right)\right|^2\right) d y, \quad u_{\text {parab}}(y)=\frac{4}{L_y^2} y(1-y)
+\begin{aligned}
+& \mathcal{B}_1(\boldsymbol{u}(\boldsymbol{x}), \boldsymbol{x}; c_b(\boldsymbol{x})) := \boldsymbol{u}(\boldsymbol{x})-c_b(\boldsymbol{x}) , \quad \boldsymbol{x}\in \Gamma_{i} \\
+& \mathcal{B}_1(\boldsymbol{u}(\boldsymbol{x}), \boldsymbol{x}):= \boldsymbol{u} - \left(v_{b}(x), 0\right) , \quad \boldsymbol{x}\in \Gamma_{b} \\
+& \mathcal{B}_2(\boldsymbol{u}(\boldsymbol{x}), \boldsymbol{x}) :=\boldsymbol{u} - \left(v_{s}(x), 0\right) , \quad \boldsymbol{x}\in \Gamma_{s} \\
+& \mathcal{B}_3(\boldsymbol{u}(\boldsymbol{x}), \boldsymbol{x}) := (\mathbf{n} \cdot \nabla) \mathbf{u}, \quad \boldsymbol{x}\in \Gamma_{o} \\
+& \mathcal{B}_4(\boldsymbol{u}(\boldsymbol{x}), \boldsymbol{x}):=\boldsymbol{u} , \quad \boldsymbol{x}\in  \Gamma_{w} \\
+& \mathcal{B}_5(p(\boldsymbol{x}), \boldsymbol{x}) := (\mathbf{n} \cdot \nabla) p, \quad \boldsymbol{x} \in \Gamma_{i} \cup \Gamma_{b} \cup \Gamma_{s} \cup \Gamma_{w} \\
+& \mathcal{B}_6(p(\boldsymbol{x}), \boldsymbol{x}) := p-p_a, \quad \boldsymbol{x} \in \Gamma_{o}
+\end{aligned} 
+$$
+where $\Gamma_{i}$ refers to the inlet on the left, $\Gamma_{b}$ refers to the blowing boundary on the bottom, $\Gamma_{s}$ refers to the suction boundary on the top,  $\Gamma_{o}$ refers to the outflow boundary on the right, and $\Gamma_{w}$ refers to the no-slip walls (see figure below). 
+<!-- $u_{in}$, $v_b$, and $v_s$ correspond to presecribed velocity profiles, ?? -->
+
+We now define
+$$
+\mathcal{J}(\boldsymbol{u}) := \frac{1}{2} \int_0^{L_y}\left(\left|u_1\left(L_x, y\right)-u_{\text {parab}}(y)\right|^2+\left|u_2\left(L_x, y\right)\right|^2\right) d y, \quad u_{\text {parab}}(y) := \frac{4}{L_y^2} y(1-y)
 $$
 
+![](https://cdn.mathpix.com/cropped/2023_05_03_190f21dadd78273f9933g-17.jpg?height=509&width=811&top_left_y=385&top_left_x=700)
+
+Interpretation: Find the inlet velocity profile $c_b$ such that the outlet velocity profile is close to parabolic.
 
 ## Methodology
 
